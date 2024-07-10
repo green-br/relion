@@ -263,34 +263,38 @@ if (CUDAToolkit_FOUND)
 		set_target_properties(relion_gpu_util PROPERTIES LINK_FLAGS "${new_link_flags}")
 	endif()
 
-	list(APPEND EXTRA_LIBS CUDA::cufft CUDA::cudart)
+	list(APPEND EXTRA_LIBS CUDA::cufft)
 	if(BUILD_SHARED_LIBS)
 		install (TARGETS relion_gpu_util LIBRARY DESTINATION lib)
 	else()
 		target_link_libraries(relion_gpu_util relion_lib)
-		target_link_libraries(relion_gpu_util CUDA::cufft CUDA::cudart)
+		target_link_libraries(relion_gpu_util CUDA::cufft)
 	endif()
 
-	target_link_libraries(relion_lib relion_gpu_util CUDA::cufft CUDA::cudart)
-	target_link_libraries(relion_lib relion_gpu_util CUDA::cufft CUDA::curand CUDA::cudart)
-
+	target_link_libraries(relion_lib relion_gpu_util CUDA::cufft)
+	target_link_libraries(relion_lib relion_gpu_util CUDA::cufft CUDA::curand)
+	target_compile_options(relion_gpu_util PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+                        -I$ENV{MPICH_DIR}/include
+                       >)
 
 
 	file(GLOB REL_JAZ_CUDA_SRC "${CMAKE_SOURCE_DIR}/src/jaz/cuda/*.cu")
 	set_source_files_properties(${REL_JAZ_CUDA_SRC} PROPERTIES LANGUAGE CUDA)
  	add_library(relion_jaz_gpu_util ${REL_JAZ_CUDA_SRC})
 
-	list(APPEND EXTRA_LIBS CUDA::cufft CUDA::cudart)
+	list(APPEND EXTRA_LIBS CUDA::cufft)
 	if(BUILD_SHARED_LIBS)
 		install (TARGETS relion_jaz_gpu_util LIBRARY DESTINATION lib)
 	else()
 		target_link_libraries(relion_jaz_gpu_util relion_lib)
-		target_link_libraries(relion_jaz_gpu_util CUDA::cufft CUDA::cudart)
+		target_link_libraries(relion_jaz_gpu_util CUDA::cufft)
 	endif()
 
-	target_link_libraries(relion_lib relion_jaz_gpu_util CUDA::cufft CUDA::cudart)
-	target_link_libraries(relion_lib relion_jaz_gpu_util CUDA::cufft CUDA::curand CUDA::cudart)
-
+	target_link_libraries(relion_lib relion_jaz_gpu_util CUDA::cufft)
+	target_link_libraries(relion_lib relion_jaz_gpu_util CUDA::cufft CUDA::curand)
+	target_compile_options(relion_jaz_gpu_util PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+                        -I$ENV{MPICH_DIR}/include
+                       >)
 
 endif(CUDAToolkit_FOUND)
 
