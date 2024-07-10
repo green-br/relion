@@ -86,12 +86,12 @@ endif(NOT DEFINED CUDA_ARCH)
 # CUDA on by default, so check for CPU-accelration request and possible conflicting dual-request
 option(ALTCPU "Enable Accelerated CPU version" OFF)
 if(ALTCPU)
-	option(CUDA "Enable CUDA GPU acceleration" OFF)
-	if(ALTCPU AND CUDA)
-   		message(FATAL_ERROR "You cannot build with both CUDA=ON and ALTCPU=ON.  Please choose one and rerun CMAKE")
+	option(ENABLE_CUDA "Enable CUDA GPU acceleration" OFF)
+	if(ALTCPU AND ENABLE_CUDA)
+   		message(FATAL_ERROR "You cannot build with both ENABLE_CUDA=ON and ALTCPU=ON.  Please choose one and rerun CMAKE")
 	endif()
 else()
-	option(CUDA "Enable CUDA GPU acceleration" ON)
+	option(ENABLE_CUDA "Enable CUDA GPU acceleration" ON)
 endif()
 
 option(DoublePrec_CPU "DoublePrec_CPU" ON)
@@ -103,11 +103,11 @@ if(ALTCPU)
     message(STATUS "ALTCPU enabled - Building CPU-accelerated version of RELION")
 endif()
 
-if(CUDA)
+if(ENABLE_CUDA)
     message(STATUS "CUDA enabled - Building CUDA-accelerated version of RELION")
 endif()
 
-if(CUDA OR ALTCPU)
+if(ENABLE_CUDA OR ALTCPU)
     add_definitions(-DACC_CUDA=2 -DACC_CPU=1)
 endif()
 
@@ -136,28 +136,28 @@ endif()
  #This *has* to be AFTER project()
 include(${CMAKE_SOURCE_DIR}/cmake/BuildTypes.cmake)
 
-if(CUDA)
+if(ENABLE_CUDA)
     # -----------------------------------------------------------------------------CUDA--
     # DOC: http://www.cmake.org/cmake/help/v3.0/module/FindCUDA.html
-    FIND_PACKAGE(CUDA)
+    FIND_PACKAGE(CUDAToolkit)
 endif()
 
-if(CUDA_FOUND)
+if(CUDAToolkit_FOUND)
     message(STATUS "Using cuda wrapper to compile....")
-    if( (NOT ${CUDA_VERSION} VERSION_LESS "7.5") AND (NOT DoublePrec_ACC) )
+    if( (NOT ${CUDAToolkit_VERSION} VERSION_LESS "7.5") AND (NOT DoublePrec_ACC) )
         message(STATUS "Cuda version is >= 7.5 and single-precision build, enable double usage warning.")
 		set(WARN_DBL "--ptxas-options=-warn-double-usage") # cuda>=7.5
-	elseif( ${CUDA_VERSION} VERSION_LESS "7.0")
+	elseif( ${CUDAToolkit_VERSION} VERSION_LESS "7.0")
 		message(WARNING "Cuda version is less than 7.0, so relion will be compiled without GPU support.")
-		set(CUDA OFF)
+		set(ENABLE_CUDA OFF)
     endif()
     
-    if(CUDA)
+    if(ENABLE_CUDA)
         add_definitions(-D_CUDA_ENABLED)
     endif()
-else(CUDA_FOUND)
+else(CUDAToolkit_FOUND)
     message(STATUS "Using non-cuda compilation....")
-endif(CUDA_FOUND)
+endif(CUDAToolkit_FOUND)
 
 # ------------------------------------------------------------------ALLOCATOR CHOICE--
 option(CachedAlloc "CachedAlloc" ON)
@@ -439,7 +439,7 @@ endif()
 
 ADD_SUBDIRECTORY(src/apps)
 
-#message(STATUS "CUDA option = ${CUDA}")
+#message(STATUS "ENABLE_CUDA option = ${ENABLE_CUDA}")
 #message(STATUS "ALTCPU option = ${ALTCPU}")
 #message(STATUS "DoublePrec_CPU option = ${DoublePrec_CPU}")
 #message(STATUS "DoublePrec_ACC option = ${DoublePrec_ACC}")
