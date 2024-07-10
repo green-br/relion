@@ -240,15 +240,15 @@ if(GUI)
 	endif()
 endif(GUI)
 
-if (CUDA_FOUND)
+if (CUDAToolkit_FOUND)
 	file(GLOB REL_CUDA_SRC "${CMAKE_SOURCE_DIR}/src/acc/cuda/*.cu" "${CMAKE_SOURCE_DIR}/src/acc/cuda/cuda_kernels/*.cu" )
-	cuda_add_library(relion_gpu_util ${REL_CUDA_SRC})
+	set_source_files_properties(${REL_CUDA_SRC} PROPERTIES LANGUAGE CUDA)
+	add_library(relion_gpu_util ${REL_CUDA_SRC})
 
 	if (${CMAKE_BUILD_TYPE_LOWER} STREQUAL "profiling")
-		find_library(NV_TOOLS_LIBRARIES   NAMES nvToolsExt  PATHS ${CUDA_TOOLKIT_ROOT_DIR}/lib ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
-		list(APPEND EXTRA_LIBS "${NV_TOOLS_LIBRARIES}")
-		target_link_libraries(relion_gpu_util ${NV_TOOLS_LIBRARIES})
-		message(STATUS "Adding extra library for NVIDIA profiling: ${NV_TOOLS_LIBRARIES}")
+		list(APPEND EXTRA_LIBS CUDA::nvToolsExt)
+		target_link_libraries(relion_gpu_util CUDA::nvToolsExt)
+		message(STATUS "Adding extra library for NVIDIA profiling: ${CUDA::nvToolsExt}")
 	endif()
 
 	# Presently we have a number of (bad) circular dependencies between the gpu util
@@ -263,35 +263,36 @@ if (CUDA_FOUND)
 		set_target_properties(relion_gpu_util PROPERTIES LINK_FLAGS "${new_link_flags}")
 	endif()
 
-	list(APPEND EXTRA_LIBS "${CUDA_CUFFT_LIBRARIES}")
+	list(APPEND EXTRA_LIBS CUDA::cufft CUDA::cudart)
 	if(BUILD_SHARED_LIBS)
 		install (TARGETS relion_gpu_util LIBRARY DESTINATION lib)
 	else()
 		target_link_libraries(relion_gpu_util relion_lib)
-		target_link_libraries(relion_gpu_util ${CUDA_CUFFT_LIBRARIES})
+		target_link_libraries(relion_gpu_util CUDA::cufft CUDA::cudart)
 	endif()
 
-	target_link_libraries(relion_lib relion_gpu_util ${CUDA_CUFFT_LIBRARIES})
-	target_link_libraries(relion_lib relion_gpu_util ${CUDA_CUFFT_LIBRARIES} ${CUDA_curand_LIBRARY})
+	target_link_libraries(relion_lib relion_gpu_util CUDA::cufft CUDA::cudart)
+	target_link_libraries(relion_lib relion_gpu_util CUDA::cufft CUDA::curand CUDA::cudart)
 
 
 
 	file(GLOB REL_JAZ_CUDA_SRC "${CMAKE_SOURCE_DIR}/src/jaz/cuda/*.cu")
-	cuda_add_library(relion_jaz_gpu_util ${REL_JAZ_CUDA_SRC})
+	set_source_files_properties(${REL_JAZ_CUDA_SRC} PROPERTIES LANGUAGE CUDA)
+ 	add_library(relion_jaz_gpu_util ${REL_JAZ_CUDA_SRC})
 
-	list(APPEND EXTRA_LIBS "${CUDA_CUFFT_LIBRARIES}")
+	list(APPEND EXTRA_LIBS CUDA::cufft CUDA::cudart)
 	if(BUILD_SHARED_LIBS)
 		install (TARGETS relion_jaz_gpu_util LIBRARY DESTINATION lib)
 	else()
 		target_link_libraries(relion_jaz_gpu_util relion_lib)
-		target_link_libraries(relion_jaz_gpu_util ${CUDA_CUFFT_LIBRARIES})
+		target_link_libraries(relion_jaz_gpu_util CUDA::cufft CUDA::cudart)
 	endif()
 
-	target_link_libraries(relion_lib relion_jaz_gpu_util ${CUDA_CUFFT_LIBRARIES})
-	target_link_libraries(relion_lib relion_jaz_gpu_util ${CUDA_CUFFT_LIBRARIES} ${CUDA_curand_LIBRARY})
+	target_link_libraries(relion_lib relion_jaz_gpu_util CUDA::cufft CUDA::cudart)
+	target_link_libraries(relion_lib relion_jaz_gpu_util CUDA::cufft CUDA::curand CUDA::cudart)
 
 
-endif(CUDA_FOUND)
+endif(CUDAToolkit_FOUND)
 
 if(TIFF_FOUND)
 	#message("TIFF FOUND")
@@ -348,9 +349,9 @@ foreach (_target ${RELION_TARGETS})
 		target_link_libraries(${_target} ${LIB} ${FFTW_LIBRARIES} ${EXTRA_LIBS} ${MPI_LIBRARIES} ${CMAKE_DL_LIBS})
 	endif(NOT MKLFFT)
 
-	if(CUDA_FOUND)
+	if(CUDAToolkit_FOUND)
 		target_link_libraries(${_target} relion_gpu_util)
-	endif(CUDA_FOUND)
+	endif(CUDAToolkit_FOUND)
 	
 	if (ALTCPU)
 		target_link_libraries(${_target} ${TBB_LIBRARIES})
