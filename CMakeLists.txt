@@ -75,9 +75,11 @@ endif()
 if(NOT DEFINED CUDA_ARCH)
     message(STATUS "Setting fallback CUDA_ARCH=50")
     set(CUDARCH "-arch=sm_50")
+    set(CUDA_ARCHITECTURES "50")
 else(NOT DEFINED CUDA_ARCH)
     message(STATUS "Using provided CUDA_ARCH=${CUDA_ARCH}")
     set(CUDARCH "-arch=sm_${CUDA_ARCH}")
+    set(CUDA_ARCHITECTURES "${CUDA_ARCH}")
 endif(NOT DEFINED CUDA_ARCH)
     
 # -------------------------------------------------------------------FURTHER OPTIONS--
