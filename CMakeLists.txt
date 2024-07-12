@@ -88,12 +88,12 @@ endif(NOT DEFINED CUDA_ARCH)
 # CUDA on by default, so check for CPU-accelration request and possible conflicting dual-request
 option(ALTCPU "Enable Accelerated CPU version" OFF)
 if(ALTCPU)
-	option(ENABLE_CUDA "Enable CUDA GPU acceleration" OFF)
+	option(CUDA "Enable CUDA GPU acceleration" OFF)
 	if(ALTCPU AND ENABLE_CUDA)
    		message(FATAL_ERROR "You cannot build with both ENABLE_CUDA=ON and ALTCPU=ON.  Please choose one and rerun CMAKE")
 	endif()
 else()
-	option(ENABLE_CUDA "Enable CUDA GPU acceleration" ON)
+	option(CUDA "Enable CUDA GPU acceleration" ON)
 endif()
 
 option(DoublePrec_CPU "DoublePrec_CPU" ON)
@@ -105,7 +105,10 @@ if(ALTCPU)
     message(STATUS "ALTCPU enabled - Building CPU-accelerated version of RELION")
 endif()
 
-if(ENABLE_CUDA)
+if(CUDA)
+    set(ENABLE_CUDA ON)
+    # CUDA:: is used in CUDAToolkit 
+    unset(CUDA)
     message(STATUS "CUDA enabled - Building CUDA-accelerated version of RELION")
 endif()
 
